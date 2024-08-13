@@ -17,7 +17,7 @@ def scrape_fight_page(url):
         all_data.append(athlete_data)
 
     columns = [
-        'Name',
+        'Name', 'Style', 'Age', 'Height', 'Reach', 
         'Sig. Str. Landed Per Min', 'Sig. Str. Absorbed Per Min', 'Takedown avg Per 15 Min', 'Submission avg Per 15 Min', 'Sig. Str. Defense (%)', 'Takedown Defense (%)', 'Knockdown Avg', 'Average fight time (secs)',
         'Sig. Str. By Position (Standing)', 'Sig. Str. By Position (Clinch)', 'Sig. Str. By Position (Ground)', 'Win by Method (KO/TKO)', 'Win by Method (Decision)', 'Win by Method (Sub)', 'Striking accuracy (%)', 'Takedown Accuracy (%)'
     ]
@@ -25,6 +25,9 @@ def scrape_fight_page(url):
     df = pd.DataFrame(all_data, columns=columns)
 
     df.to_csv('mens_fighters_database.csv', index=False)
+
+
+
 def scrape_athlete_profile(profile_url):
     response = requests.get(profile_url)
     profile_soup = BeautifulSoup(response.text, 'html.parser')
@@ -33,6 +36,23 @@ def scrape_athlete_profile(profile_url):
     athlete_name = name_tag.text.strip() if name_tag else 'Unknown Athlete'
 
     metrics_array = [athlete_name]
+    def extract_and_append(label, cast_type=str):
+        section = profile_soup.find('div', class_='c-bio__label', string=label)
+        if section:
+            text_section = section.find_next_sibling('div', class_='c-bio__text')
+            if text_section:
+                text = text_section.text.strip()
+                metrics_array.append(cast_type(text))
+            else:
+                metrics_array.append(None)
+        else:
+            metrics_array.append(None)
+
+    # Extract and append each bio detail
+    extract_and_append('Fighting style')
+    extract_and_append('Age', int)
+    extract_and_append('Height', float)
+    extract_and_append('Reach', float)
 
     advanced_metrics = profile_soup.find_all('div', class_='c-stat-compare__number')
 
@@ -75,6 +95,7 @@ def scrape_athlete_profile(profile_url):
             percentage_value = 0
 
         metrics_array.append(percentage_value)
+   
 
     return metrics_array
 
