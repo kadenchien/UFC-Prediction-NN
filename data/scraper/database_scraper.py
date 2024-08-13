@@ -18,14 +18,13 @@ def scrape_fight_page(url):
 
     columns = [
         'Name',
-        'Sig. Str. Landed Per Min', 'Sig. Str. Absorbed Per Min', 'Takedown avg Per 15 Min', 'Submission avg Per 15 Min', 'Sig. Str. Defense Percentage', 'Takedown Defense Percentage', 'Knockdown Avg', 'Average fight time (seconds)',
-        'Sig. Str. By Position (Standing)', 'Sig. Str. By Position (Clinch)', 'Sig. Str. By Position (Ground)', 'Win by Method (KO/TKO)', 'Win by Method (Decision)', 'Win by Method (Sub)'
+        'Sig. Str. Landed Per Min', 'Sig. Str. Absorbed Per Min', 'Takedown avg Per 15 Min', 'Submission avg Per 15 Min', 'Sig. Str. Defense (%)', 'Takedown Defense (%)', 'Knockdown Avg', 'Average fight time (secs)',
+        'Sig. Str. By Position (Standing)', 'Sig. Str. By Position (Clinch)', 'Sig. Str. By Position (Ground)', 'Win by Method (KO/TKO)', 'Win by Method (Decision)', 'Win by Method (Sub)', 'Striking accuracy (%)', 'Takedown Accuracy (%)'
     ]
 
     df = pd.DataFrame(all_data, columns=columns)
 
     df.to_csv('mens_fighters_database.csv', index=False)
-
 def scrape_athlete_profile(profile_url):
     response = requests.get(profile_url)
     profile_soup = BeautifulSoup(response.text, 'html.parser')
@@ -58,7 +57,6 @@ def scrape_athlete_profile(profile_url):
 
     for strike in sig_strikes_by_pos:
         strike_text = strike.text.strip()
-        # Extract the part before the space (which is the number before the percentage)
         strike_value = strike_text.split()[0]
         try:
             strike_value = float(strike_value)
@@ -66,7 +64,18 @@ def scrape_athlete_profile(profile_url):
             strike_value = 0.0
 
         metrics_array.append(strike_value)
-    
+
+    chart_percentages = profile_soup.find_all('text', class_='e-chart-circle__percent')
+
+    for percentage in chart_percentages:
+        percentage_text = percentage.text.strip().replace('%', '')
+        try:
+            percentage_value = int(percentage_text)
+        except ValueError:
+            percentage_value = 0
+
+        metrics_array.append(percentage_value)
+
     return metrics_array
 
 scrape_fight_page('https://www.ufc.com/athletes/all?filters%5B0%5D=status%3A23&filters%5B1%5D=weight_class%3A8&filters%5B2%5D=weight_class%3A9&filters%5B3%5D=weight_class%3A10&filters%5B4%5D=weight_class%3A11&filters%5B5%5D=weight_class%3A12&filters%5B6%5D=weight_class%3A13&filters%5B7%5D=weight_class%3A14&filters%5B8%5D=weight_class%3A15')
