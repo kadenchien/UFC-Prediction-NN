@@ -10,7 +10,6 @@ def scrape_fight_page(url):
 
     # Extracting fight data
     fight_data = {}
-
     fight_data['event'] = soup.find('h2', class_='b-content__title').text.strip()
     
     fighters = soup.find_all('a', class_='b-link b-fight-details__person-link')
@@ -104,7 +103,6 @@ def scrape_individual_fights(event_url):
         onclick_attr = fight.get('onclick')
         if onclick_attr:
             link = onclick_attr.split("'")[1]  # Extract the URL from the onclick attribute
-            print(link)
             fight_links.append(link)
     return fight_links
 
@@ -112,19 +110,22 @@ def scrape_individual_fights(event_url):
 def scrape_ufc_events(url, num_events):
     all_fight_data = []
     
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    fightnights = soup.find_all('a', class_='b-link b-link_style_black')
+    for page in range(num_events):
+        newURL = f'{url}?page={page+1}'
+        response = requests.get(newURL)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        fightnights = soup.find_all('a', class_='b-link b-link_style_black')
 
-    # Loop over the specified number of events
-    for i in range(min(num_events, len(fightnights))):
-        event_url = fightnights[i]['href']
-        fight_links = scrape_individual_fights(event_url)
-        
-        for link in fight_links:
-            fight_data = scrape_fight_page(link)
-            all_fight_data.append(fight_data)
-            time.sleep(1)  # To avoid overwhelming the server
+        # Loop over the specified number of events
+        for i in range(len(fightnights)):
+            if "Fight Night" not in fightnights[i].text.strip():
+                event_url = fightnights[i]['href']
+                fight_links = scrape_individual_fights(event_url)
+                
+                for link in fight_links:
+                    fight_data = scrape_fight_page(link)
+                    all_fight_data.append(fight_data)
+                    time.sleep(1)  # To avoid overwhelming the server
     
     return all_fight_data
 
@@ -132,7 +133,7 @@ def scrape_ufc_events(url, num_events):
 url = 'http://ufcstats.com/statistics/events/completed'
 
 # Scraping data from UFCStats
-ufc_data = scrape_ufc_events(url, num_events=5)  # Adjust num_events for more data
+ufc_data = scrape_ufc_events(url, num_events=10)  # Adjust num_events for more data
 
 # Converting to DataFrame and saving to CSV
 df = pd.DataFrame(ufc_data)
