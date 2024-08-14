@@ -2,19 +2,20 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import requests
 
-def scrape_fight_page(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    athlete_profiles = soup.find_all('a', class_='e-button--black')
-
+def scrape_fight_page(base_url):
     all_data = []
+    for page_num in range(0, 65):  # Loop from page 1 to page 65
+        url = f"{base_url}&page={page_num}"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-    for profile in athlete_profiles:
-        relative_url = profile['href']
-        full_url = f"https://www.ufc.com{relative_url}"
-        athlete_data = scrape_athlete_profile(full_url)
-        all_data.append(athlete_data)
+        athlete_profiles = soup.find_all('a', class_='e-button--black')
+
+        for profile in athlete_profiles:
+            relative_url = profile['href']
+            full_url = f"https://www.ufc.com{relative_url}"
+            athlete_data = scrape_athlete_profile(full_url)
+            all_data.append(athlete_data)
 
     columns = [
         'Name', 'Style', 'Age', 'Height', 'Reach', 
@@ -25,8 +26,6 @@ def scrape_fight_page(url):
     df = pd.DataFrame(all_data, columns=columns)
 
     df.to_csv('mens_fighters_database.csv', index=False)
-
-
 
 def scrape_athlete_profile(profile_url):
     response = requests.get(profile_url)
@@ -70,7 +69,7 @@ def scrape_athlete_profile(profile_url):
                 minutes, seconds = map(float, metric_text.split(':'))
                 metric_value = minutes * 60 + seconds
             else:
-                metric_value = 0.0
+                metric_value = None
 
         metrics_array.append(metric_value)
 
@@ -82,7 +81,7 @@ def scrape_athlete_profile(profile_url):
         try:
             strike_value = float(strike_value)
         except ValueError:
-            strike_value = 0.0
+            strike_value = None
 
         metrics_array.append(strike_value)
 
@@ -93,7 +92,7 @@ def scrape_athlete_profile(profile_url):
         try:
             percentage_value = int(percentage_text)
         except ValueError:
-            percentage_value = 0
+            percentage_value = None
 
         metrics_array.append(percentage_value)
     def extract_record():
