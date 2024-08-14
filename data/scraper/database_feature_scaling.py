@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from IPython.display import display
 
 
-df = pd.read_csv('/Users/kevinliu/Desktop/UFC-Prediction-NN/data/raw/mens_fighters_database.csv')
+df = pd.read_csv('/Users/kevinliu/Desktop/UFC-Prediction-NN/data/raw/womens_fighters_database.csv')
 
 #replace all numerical NA values with the mean of that column
 imputer = SimpleImputer(strategy='mean')
@@ -23,4 +23,6 @@ numerical_columns = df.select_dtypes(include=['float64', 'int64']).columns
 
 # Fit the scaler to the data and transform it
 df[numerical_columns] = scaler.fit_transform(df[numerical_columns])
-display(df)
+
+
+df.to_csv('cleaned_noramlized_womens_fighters_database.csv', index=False)

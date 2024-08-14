@@ -4,7 +4,7 @@ import requests
 
 def scrape_fight_page(base_url):
     all_data = []
-    for page_num in range(0, 65):  # Loop from page 1 to page 65
+    for page_num in range(0, 26):  # Loop from page 1 to page 65
         url = f"{base_url}&page={page_num}"
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -25,7 +25,7 @@ def scrape_fight_page(base_url):
 
     df = pd.DataFrame(all_data, columns=columns)
 
-    df.to_csv('mens_fighters_database.csv', index=False)
+    df.to_csv('womens_fighters_database.csv', index=False)
 
 def scrape_athlete_profile(profile_url):
     response = requests.get(profile_url)
@@ -112,5 +112,5 @@ def scrape_athlete_profile(profile_url):
     return metrics_array
     
 
-scrape_fight_page('https://www.ufc.com/athletes/all?filters%5B0%5D=status%3A23&filters%5B1%5D=weight_class%3A8&filters%5B2%5D=weight_class%3A9&filters%5B3%5D=weight_class%3A10&filters%5B4%5D=weight_class%3A11&filters%5B5%5D=weight_class%3A12&filters%5B6%5D=weight_class%3A13&filters%5B7%5D=weight_class%3A14&filters%5B8%5D=weight_class%3A15')
+scrape_fight_page('https://www.ufc.com/athletes/all?filters%5B0%5D=weight_class%3A16&filters%5B1%5D=weight_class%3A37&filters%5B2%5D=weight_class%3A38&filters%5B3%5D=weight_class%3A39')
 
