@@ -19,7 +19,7 @@ def scrape_fight_page(url):
     columns = [
         'Name', 'Style', 'Age', 'Height', 'Reach', 
         'Sig. Str. Landed Per Min', 'Sig. Str. Absorbed Per Min', 'Takedown avg Per 15 Min', 'Submission avg Per 15 Min', 'Sig. Str. Defense (%)', 'Takedown Defense (%)', 'Knockdown Avg', 'Average fight time (secs)',
-        'Sig. Str. By Position (Standing)', 'Sig. Str. By Position (Clinch)', 'Sig. Str. By Position (Ground)', 'Win by Method (KO/TKO)', 'Win by Method (Decision)', 'Win by Method (Sub)', 'Striking accuracy (%)', 'Takedown Accuracy (%)'
+        'Sig. Str. By Position (Standing)', 'Sig. Str. By Position (Clinch)', 'Sig. Str. By Position (Ground)', 'Win by Method (KO/TKO)', 'Win by Method (Decision)', 'Win by Method (Sub)', 'Striking accuracy (%)', 'Takedown Accuracy (%)', 'Wins', 'Losses', 'Draws'
     ]
 
     df = pd.DataFrame(all_data, columns=columns)
@@ -36,6 +36,7 @@ def scrape_athlete_profile(profile_url):
     athlete_name = name_tag.text.strip() if name_tag else 'Unknown Athlete'
 
     metrics_array = [athlete_name]
+    
     def extract_and_append(label, cast_type=str):
         section = profile_soup.find('div', class_='c-bio__label', string=label)
         if section:
@@ -95,9 +96,22 @@ def scrape_athlete_profile(profile_url):
             percentage_value = 0
 
         metrics_array.append(percentage_value)
-   
+    def extract_record():
+            record_section = profile_soup.find('p', class_='hero-profile__division-body')
+            if record_section:
+                record_text = record_section.text.strip()
+
+                record_parts = record_text.split(' ')[0].split('-')
+                wins = int(record_parts[0])
+                losses = int(record_parts[1])
+                draws = int(record_parts[2])
+                metrics_array.extend([wins, losses, draws])
+            else:
+                metrics_array.extend([None, None, None])
+    extract_record()
 
     return metrics_array
+    
 
 scrape_fight_page('https://www.ufc.com/athletes/all?filters%5B0%5D=status%3A23&filters%5B1%5D=weight_class%3A8&filters%5B2%5D=weight_class%3A9&filters%5B3%5D=weight_class%3A10&filters%5B4%5D=weight_class%3A11&filters%5B5%5D=weight_class%3A12&filters%5B6%5D=weight_class%3A13&filters%5B7%5D=weight_class%3A14&filters%5B8%5D=weight_class%3A15')
 
