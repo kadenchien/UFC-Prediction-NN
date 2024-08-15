@@ -1,63 +1,39 @@
 import pandas as pd
 
-# Load the CSV files
-df_fighter1 = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\scraper\list1.csv')
-df_fighter2 = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\scraper\list2.csv')
+df = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\scraper\list2.csv', header=0)
 
-# Combine the dataframes for both fighters
-df_combined = pd.concat([df_fighter1, df_fighter2], ignore_index=True)
+# Assuming the DataFrame is sorted with fighter_1 in alphabetical order and fights in chronological order
+def add_previous_stats(df):
+    # Create a list of all columns related to fighter_1 stats
+    fighter_2_columns = [
+        'fighter_2_knockdowns', 'fighter_2_ss', 'fighter_2_ss_pct', 'fighter_2_total_strikes',
+        'fighter_2_takedowns', 'fighter_2_takedown_pct', 'fighter_2_submission_attempts',
+        'fighter_2_reverses', 'fighter_2_control', 'fighter_2_head_ss', 'fighter_2_body_ss',
+        'fighter_2_leg_ss', 'fighter_2_distance_ss', 'fighter_2_clinch_ss', 'fighter_2_ground_ss'
+    ]
 
-# Sort by event (assuming event represents the chronological order)
-df_combined.sort_values(by=['event'], inplace=True)
+    # Create new columns for previous stats
+    for col in fighter_2_columns:
+        df[f'{col}_previous'] = None
 
-# Initialize dictionaries to store cumulative stats for each fighter
-fighter_stats_1 = {}
-fighter_stats_2 = {}
-
-# Create new columns to store historical stats
-for fighter_prefix in ['fighter_1', 'fighter_2']:
-    df_combined[f'{fighter_prefix}_prev_stats'] = None
-
-# Function to accumulate stats for a fighter
-def accumulate_stats(fighter, stats_dict, row, fighter_prefix):
-    # Initialize stats if the fighter is not in the dictionary
-    if fighter not in stats_dict:
-        stats_dict[fighter] = {
-            'knockdowns': 0,
-            'ss': 0,
-            'ss_pct': 0,
-            'total_strikes': 0,
-            'takedowns': 0,
-            'takedown_pct': 0,
-            'submission_attempts': 0,
-            'reverses': 0,
-            'control': 0,
-            'head_ss': 0,
-            'body_ss': 0,
-            'leg_ss': 0,
-            'distance_ss': 0,
-            'clinch_ss': 0,
-            'ground_ss': 0
-        }
+    # Process each fighter's fights
+    for fighter in df['fighter_2'].unique():
+        # Filter the DataFrame for the current fighter
+        fighter_df = df[df['fighter_2'] == fighter]
+        
+        # Initialize previous stats
+        previous_stats = {col: [] for col in fighter_2_columns}
+        
+        for index, row in fighter_df.iterrows():
+            for col in fighter_2_columns:
+                df.at[index, f'{col}_previous'] = previous_stats[col].copy()
+                # Append current stats to the previous_stats for future use
+                previous_stats[col].append(row[col])
     
-    # Store the previous stats for the fighter
-    prev_stats = stats_dict[fighter]
-    df_combined.at[row.name, f'{fighter_prefix}_prev_stats'] = prev_stats.copy()
-    
-    # Update the fighter's stats with the current fight's stats
-    for stat in prev_stats:
-        prev_stats[stat] += row[f'{fighter_prefix}_{stat}']
+    return df
 
-# Iterate over each row in the sorted dataframe
-for index, row in df_combined.iterrows():
-    fighter_1 = row['fighter_1']
-    fighter_2 = row['fighter_2']
-    
-    # Update stats for fighter_1
-    accumulate_stats(fighter_1, fighter_stats_1, row, 'fighter_1')
-    
-    # Update stats for fighter_2
-    accumulate_stats(fighter_2, fighter_stats_2, row, 'fighter_2')
+# Apply the function to your DataFrame
+df = add_previous_stats(df)
 
-# Save the updated DataFrame
-df_combined.to_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\scraper\processed_fights.csv', index=False)
+# Save or further process your updated DataFrame
+df.to_csv('list2_full.csv', index=False)
