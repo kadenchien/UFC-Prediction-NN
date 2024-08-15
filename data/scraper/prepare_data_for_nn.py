@@ -1,0 +1,83 @@
+import pandas as pd
+import numpy as np
+# Load the fighter stats dataset
+#fighters_men = pd.read_csv('/Users/kevinliu/Desktop/UFC-Prediction-NN/data/raw/mens_cleaned.csv')
+#fighters_women = pd.read_csv('/Users/kevinliu/Desktop/UFC-Prediction-NN/data/raw/womens_cleaned.csv')
+#all_fighters = pd.concat([fighters_men, fighters_women], ignore_index=True)
+# all_fighters.to_csv('all_fighters_cleaned_database.csv', index=False)
+
+
+UFC_fights1 = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\raw\ufc_fight_data.csv')
+UFC_fights2 = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\raw\ufc_fight_data_2.csv')
+all_UFC_fights =  pd.concat([UFC_fights1, UFC_fights2], ignore_index=True)
+all_UFC_fights['original_order'] = range(len(all_UFC_fights))
+# all_UFC_fights.to_csv('all_UFC_fights_database.csv', index=False)
+
+
+#convert all data in all_UFC_fights to numeric
+def extract_first_number(text):
+    if pd.isna(text) or "---" in text:
+        return None
+    parts = text.split(' of ')
+    if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit():
+        return None  # Handle unexpected formats
+    if int(parts[1]) == 0:
+        return 0
+    return round(int(parts[0]) / int(parts[1]), 9)
+
+# Function to convert percentage strings to floats
+def convert_percentage(text):
+    if pd.isna(text) or "---" in text:
+        return None
+    # Only convert if the string ends with a '%' character
+    if isinstance(text, str) and text.endswith('%'):
+        return float(text.strip('%')) / 100.0
+    else:
+        return text  # Return the original text if it's not a percentage
+
+
+columns_to_convert = [
+    'fighter_1_ss', 'fighter_2_ss', 
+    'fighter_1_total_strikes', 'fighter_2_total_strikes',
+    'fighter_1_takedowns', 'fighter_2_takedowns',
+    'fighter_1_head_ss', 'fighter_2_head_ss',
+    'fighter_1_body_ss', 'fighter_2_body_ss',
+    'fighter_1_leg_ss', 'fighter_2_leg_ss',
+    'fighter_1_distance_ss', 'fighter_2_distance_ss',
+    'fighter_1_clinch_ss', 'fighter_2_clinch_ss',
+    'fighter_1_ground_ss', 'fighter_2_ground_ss'
+]
+for col in columns_to_convert:
+    all_UFC_fights[col] = all_UFC_fights[col].apply(extract_first_number)
+
+
+percentage_columns = [
+    'fighter_1_ss_pct', 'fighter_2_ss_pct', 
+    'fighter_1_takedown_pct', 'fighter_2_takedown_pct'
+]
+for col in percentage_columns:
+    all_UFC_fights[col] = all_UFC_fights[col].apply(convert_percentage)
+
+# Function to check if a value is numeric and convert it to a float, otherwise set to 0
+def ensure_numeric_or_zero(value):
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return 0
+
+
+columns_to_check = [
+    'fighter_2_knockdowns', 'fighter_2_ss_pct', 'fighter_2_takedown_pct',
+    'fighter_2_reverses', 'fighter_1_control', 'fighter_2_control'
+]
+# Apply the function to the specified columns
+for col in columns_to_check:
+    all_UFC_fights[col] = all_UFC_fights[col].apply(ensure_numeric_or_zero)
+
+sorted_by_fighter1 = all_UFC_fights.sort_values(by=['fighter_1', 'original_order'], ascending=[True, False])
+sorted_by_fighter2 = all_UFC_fights.sort_values(by=['fighter_2', 'original_order'], ascending=[True, False])
+
+
+sorted_by_fighter1.to_csv('list1.csv', index=False)
+sorted_by_fighter2.to_csv('list2.csv', index=False)
+
