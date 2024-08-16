@@ -73,10 +73,6 @@ print(fighter2_sequences)
 # Now the DataFrame has two new columns: 'fighter_1_history_sequence' and 'fighter_2_history_sequence'
 # Each cell in these columns contains a numpy array representing the fighter's history sequence
 
-# Optionally, you can save the updated DataFrame to a new CSV file
-# Note: saving numpy arrays to CSV might not be the best option; consider using pickle or HDF5 for this kind of data
-# df.to_csv('ufc_fights_with_sequences.csv', index=False)
-
 # If you want to save the DataFrame with sequences, it's better to use pickle:
 import pickle
 
