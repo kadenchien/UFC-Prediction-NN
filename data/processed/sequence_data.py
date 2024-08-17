@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # Read the CSV file
-df = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\processed\processed_ufc_dataset.csv')
+df = pd.read_csv(r'C:\Users\Kaden\Documents\GitHub\UFC-Prediction-NN\data\creating-the-final-dataset\prepped_data_for__ML.csv')
 
 # Function to convert a single value to float, handling NaN and empty values
 def safe_float_convert(value):
@@ -72,13 +72,13 @@ print(fighter2_sequences)
 
 # Now the DataFrame has two new columns: 'fighter_1_history_sequence' and 'fighter_2_history_sequence'
 # Each cell in these columns contains a numpy array representing the fighter's history sequence
-df.to_csv("final.csv")
+# df.to_csv("final.csv")
 
 # If you want to save the DataFrame with sequences, it's better to use pickle:
-#import pickle
+import pickle
 
-#with open('ufc_fights_with_sequences.pkl', 'wb') as f:
-    #pickle.dump(df, f)
+with open('ufc_fights_with_sequences.pkl', 'wb') as f:
+    pickle.dump(df, f)
 
 # To load the DataFrame later:
 # with open('ufc_fights_with_sequences.pkl', 'rb') as f:
