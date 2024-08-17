@@ -7,7 +7,6 @@ with open('ufc_fights_with_sequences.pkl', 'rb') as f:
 
 # Print basic information about the DataFrame
 print("DataFrame Info:")
-print(df.info())
 
 # Print the first few rows of the DataFrame
 print("\nFirst few rows:")
